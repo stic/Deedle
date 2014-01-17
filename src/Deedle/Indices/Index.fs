@@ -142,6 +142,8 @@ type IIndex<'K when 'K : equality> =
   /// in a series (where we need to check if a value at the address is available)
   abstract Lookup : key:'K * lookup:Lookup * condition:(Address -> bool) -> OptionalValue<'K * Address>  
 
+  abstract LookupFast : key:'K -> Address
+
   /// Returns all key-address mappings in the index
   abstract Mappings : seq<'K * Address>
 

@@ -72,6 +72,15 @@ let ``Should be able to convert bool to nullable bool``() =
 // Construction & basics
 // ------------------------------------------------------------------------------------------------
 
+
+[<Test>]
+let imslow() =
+  let tups = ([|0 .. 1000000|] |> Array.zip [|0 .. 1000000|])
+  let s1 = series tups
+  let arr = Index.ofKeys [|1 .. 1000001|]
+  let s2 = s1.RealignFast(arr) |> ignore
+  s2.Keys |> shouldEqual (Seq.ofArray arr)
+
 [<Test>]
 let ``Can create series with incomparable keys``() =
   let rnd1 = System.Random()

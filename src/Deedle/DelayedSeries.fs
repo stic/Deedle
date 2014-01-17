@@ -188,6 +188,7 @@ type internal DelayedIndex<'K, 'V when 'K : equality> internal (source:DelayedSo
     member x.KeyRange = source.RangeMin, source.RangeMax
     member x.Keys = source.Index.Keys
     member x.Lookup(key, semantics, check) = source.Index.Lookup(key, semantics, check)
+    member x.LookupFast(key) = source.Index.LookupFast(key)
     member x.Mappings = source.Index.Mappings
     member x.IsOrdered = true // source.Index.Ordered
     member x.Comparer = source.Index.Comparer

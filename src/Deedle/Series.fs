@@ -11,6 +11,7 @@ open Deedle.Indices
 open Deedle.Keys
 open Deedle.Vectors
 open Deedle.VectorHelpers
+open Deedle.Vectors.ArrayVector
 
 /// This enumeration specifeis the behavior of `Union` operation on series when there are
 /// overlapping keys in two series that are being unioned. The options include prefering values
@@ -637,9 +638,23 @@ and
   /// [category:Indexing]
   member x.Realign(newKeys) = 
     let newIndex = Index.ofKeys newKeys
-    let newIndex, thisRowCmd, otherRowCmd = 
-      createJoinTransformation indexBuilder JoinKind.Right Lookup.Exact x.Index newIndex (Vectors.Return 0) (Vectors.Return 1)
-    let newVector = vectorBuilder.Build(thisRowCmd, [| this.Vector |])
+    let vector = x.Vector.Data
+
+    let findAll getter = [|
+      for k in newKeys -> 
+        let x = index.LookupFast(k)
+        match x with
+        | addr when addr >= 0L -> getter addr
+        | _                    -> OptionalValue.Missing |]
+
+    let newdata = 
+      match vector with
+      | VectorData.DenseList v  -> findAll (fun addr -> OptionalValue(v.Item(int addr)))
+      | VectorData.SparseList v -> findAll (fun addr -> v.Item(int addr))
+      | _                       -> raise <| Exception("Cannot realign Sequence")
+
+    let newVector = ArrayVector(ArrayVectorData.VectorOptional newdata)
+
     Series<_,_>(newIndex, newVector, vectorBuilder, indexBuilder)
 
   /// Replace the index of the series with ordinarilly generated integers starting from zero.
